@@ -71,7 +71,7 @@ export function EditFoodModal({ isOpen, onClose, onSubmit, food }: EditFoodModal
         rating: Number(formData.rating),
         image: formData.image.trim(),
         restaurant: {
-          id: formData.restaurant.id.trim(),
+          id: food.restaurant.id,
           name: formData.restaurant.name.trim(),
           logo: formData.restaurant.logo.trim(),
           status: formData.restaurant.status,

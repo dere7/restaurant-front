@@ -21,7 +21,6 @@ export function AddFoodModal({ isOpen, onClose, onSubmit }: AddFoodModalProps) {
     rating: "",
     image: "",
     restaurant: {
-      id: "",
       name: "",
       logo: "",
       status: "OPEN_NOW" as "OPEN_NOW" | "CLOSED",
@@ -53,7 +52,7 @@ export function AddFoodModal({ isOpen, onClose, onSubmit }: AddFoodModalProps) {
         rating: Number(formData.rating),
         image: formData.image.trim(),
         restaurant: {
-          id: formData.restaurant.id.trim(),
+          id: '',
           name: formData.restaurant.name.trim(),
           logo: formData.restaurant.logo.trim(),
           status: formData.restaurant.status,
@@ -65,7 +64,6 @@ export function AddFoodModal({ isOpen, onClose, onSubmit }: AddFoodModalProps) {
         rating: "",
         image: "",
         restaurant: {
-          id: "",
           name: "",
           logo: "",
           status: "OPEN_NOW",
