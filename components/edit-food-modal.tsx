@@ -19,191 +19,205 @@ interface EditFoodModalProps {
 
 export function EditFoodModal({ isOpen, onClose, onSubmit, food }: EditFoodModalProps) {
   const [formData, setFormData] = useState({
-    food_name: "",
-    food_rating: "",
-    food_image: "",
-    restaurant_name: "",
-    restaurant_logo: "",
-    restaurant_status: "Open Now" as "Open Now" | "Closed",
-    price: "",
+    name: "",
+    rating: "",
+    image: "",
+    restaurant: {
+      id: "",
+      name: "",
+      logo: "",
+      status: "OPEN_NOW" as "OPEN_NOW" | "CLOSED",
+    },
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (food) {
       setFormData({
-        food_name: food.food_name,
-        food_rating: food.food_rating.toString(),
-        food_image: food.food_image || "",
-        restaurant_name: food.restaurant_name,
-        restaurant_logo: food.restaurant_logo || "",
-        restaurant_status: food.restaurant_status,
-        price: food.price.toString(),
+        name: food.name,
+        rating: food.rating.toString(),
+        image: food.image || "",
+        restaurant: {
+          id: food.restaurant.id,
+          name: food.restaurant.name,
+          logo: food.restaurant.logo || "",
+          status: food.restaurant.status,
+        },
       })
     }
   }, [food])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-
     const newErrors: Record<string, string> = {}
 
-    if (!formData.food_name.trim()) {
-      newErrors.food_name = "Food name is required"
+    if (!formData.name.trim()) {
+      newErrors.name = "Food name is required"
     }
 
-    if (
-      !formData.food_rating ||
-      isNaN(Number(formData.food_rating)) ||
-      Number(formData.food_rating) < 0 ||
-      Number(formData.food_rating) > 5
-    ) {
-      newErrors.food_rating = "Rating must be a number between 0 and 5"
+    if (!formData.rating || isNaN(Number(formData.rating)) || Number(formData.rating) < 0 || Number(formData.rating) > 5) {
+      newErrors.rating = "Rating must be a number between 0 and 5"
     }
 
-    if (!formData.restaurant_name.trim()) {
-      newErrors.restaurant_name = "Restaurant name is required"
-    }
-
-    if (!formData.price || isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
-      newErrors.price = "Price must be a positive number"
+    if (!formData.restaurant.name.trim()) {
+      newErrors.restaurantName = "Restaurant name is required"
     }
 
     setErrors(newErrors)
 
     if (Object.keys(newErrors).length === 0) {
       onSubmit({
-        food_name: formData.food_name.trim(),
-        food_rating: Number(formData.food_rating),
-        food_image: formData.food_image.trim(),
-        restaurant_name: formData.restaurant_name.trim(),
-        restaurant_logo: formData.restaurant_logo.trim(),
-        restaurant_status: formData.restaurant_status,
-        price: Number(formData.price),
+        name: formData.name.trim(),
+        rating: Number(formData.rating),
+        image: formData.image.trim(),
+        restaurant: {
+          id: formData.restaurant.id.trim(),
+          name: formData.restaurant.name.trim(),
+          logo: formData.restaurant.logo.trim(),
+          status: formData.restaurant.status,
+        },
       })
 
       setErrors({})
     }
   }
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }))
+  const handleChange = (
+    field: keyof typeof formData,
+    value: string,
+    nestedField?: keyof typeof formData.restaurant
+  ) => {
+    if (nestedField && field === "restaurant") {
+      setFormData((prev) => ({
+        ...prev,
+        restaurant: {
+          ...prev.restaurant,
+          [nestedField]: value,
+        },
+      }))
+      if (errors[nestedField as string]) {
+        setErrors((prev) => ({ ...prev, [nestedField as string]: "" }))
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [field]: value }))
+      if (errors[field as string]) {
+        setErrors((prev) => ({ ...prev, [field as string]: "" }))
+      }
     }
   }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Edit Food</DialogTitle>
+      <DialogContent className="sm:max-w-md bg-white rounded-2xl p-8">
+        <DialogHeader className="text-center mb-6">
+          <DialogTitle className="text-2xl font-bold text-orange-500">Edit Meal</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="edit_food_name">Food Name *</Label>
+            <Label htmlFor="name" className="text-gray-600 text-sm mb-2 block">
+              Food name
+            </Label>
             <Input
-              id="edit_food_name"
-              name="food_name"
-              placeholder="Enter food name"
-              value={formData.food_name}
-              onChange={(e) => handleChange("food_name", e.target.value)}
-              className={errors.food_name ? "border-red-500" : ""}
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={(e) => handleChange("name", e.target.value)}
+              className={`bg-gray-100 border-0 h-12 rounded-lg ${errors.name ? "border border-red-500" : ""}`}
             />
-            {errors.food_name && <p className="text-red-500 text-sm mt-1">{errors.food_name}</p>}
+            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
           </div>
 
           <div>
-            <Label htmlFor="edit_food_rating">Food Rating *</Label>
+            <Label htmlFor="rating" className="text-gray-600 text-sm mb-2 block">
+              Food rating
+            </Label>
             <Input
-              id="edit_food_rating"
-              name="food_rating"
+              id="rating"
+              name="rating"
               type="number"
               min="0"
               max="5"
               step="0.1"
-              placeholder="Enter rating (0-5)"
-              value={formData.food_rating}
-              onChange={(e) => handleChange("food_rating", e.target.value)}
-              className={errors.food_rating ? "border-red-500" : ""}
+              value={formData.rating}
+              onChange={(e) => handleChange("rating", e.target.value)}
+              className={`bg-gray-100 border-0 h-12 rounded-lg ${errors.rating ? "border border-red-500" : ""}`}
             />
-            {errors.food_rating && <p className="text-red-500 text-sm mt-1">{errors.food_rating}</p>}
+            {errors.rating && <p className="text-red-500 text-sm mt-1">{errors.rating}</p>}
           </div>
 
           <div>
-            <Label htmlFor="edit_food_image">Food Image URL</Label>
+            <Label htmlFor="image" className="text-gray-600 text-sm mb-2 block">
+              Food image (link)
+            </Label>
             <Input
-              id="edit_food_image"
-              name="food_image"
-              placeholder="Enter image URL"
-              value={formData.food_image}
-              onChange={(e) => handleChange("food_image", e.target.value)}
+              id="image"
+              name="image"
+              value={formData.image}
+              onChange={(e) => handleChange("image", e.target.value)}
+              className="bg-gray-100 border-0 h-12 rounded-lg"
             />
           </div>
 
           <div>
-            <Label htmlFor="edit_restaurant_name">Restaurant Name *</Label>
+            <Label htmlFor="restaurant_name" className="text-gray-600 text-sm mb-2 block">
+              Restaurant name
+            </Label>
             <Input
-              id="edit_restaurant_name"
+              id="restaurant_name"
               name="restaurant_name"
-              placeholder="Enter restaurant name"
-              value={formData.restaurant_name}
-              onChange={(e) => handleChange("restaurant_name", e.target.value)}
-              className={errors.restaurant_name ? "border-red-500" : ""}
+              value={formData.restaurant.name}
+              onChange={(e) => handleChange("restaurant", e.target.value, "name")}
+              className={`bg-gray-100 border-0 h-12 rounded-lg ${errors.restaurantName ? "border border-red-500" : ""}`}
             />
-            {errors.restaurant_name && <p className="text-red-500 text-sm mt-1">{errors.restaurant_name}</p>}
+            {errors.restaurantName && <p className="text-red-500 text-sm mt-1">{errors.restaurantName}</p>}
           </div>
 
           <div>
-            <Label htmlFor="edit_restaurant_logo">Restaurant Logo URL</Label>
+            <Label htmlFor="restaurant_logo" className="text-gray-600 text-sm mb-2 block">
+              Restaurant logo (link)
+            </Label>
             <Input
-              id="edit_restaurant_logo"
+              id="restaurant_logo"
               name="restaurant_logo"
-              placeholder="Enter logo URL"
-              value={formData.restaurant_logo}
-              onChange={(e) => handleChange("restaurant_logo", e.target.value)}
+              value={formData.restaurant.logo}
+              onChange={(e) => handleChange("restaurant", e.target.value, "logo")}
+              className="bg-gray-100 border-0 h-12 rounded-lg"
             />
           </div>
 
           <div>
-            <Label htmlFor="edit_restaurant_status">Restaurant Status</Label>
+            <Label htmlFor="edit_restaurant_status" className="text-gray-600 text-sm mb-2 block">
+              Restaurant status (open/close)
+            </Label>
             <Select
               name="restaurant_status"
-              value={formData.restaurant_status}
-              onValueChange={(value: "Open Now" | "Closed") => handleChange("restaurant_status", value)}
+              value={formData.restaurant.status}
+              onValueChange={(value: "OPEN_NOW" | "CLOSED") => handleChange("restaurant", value, "status")}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-gray-100 border-0 h-12 rounded-lg">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Open Now">Open Now</SelectItem>
-                <SelectItem value="Closed">Closed</SelectItem>
+                <SelectItem value="OPEN_NOW">Open Now</SelectItem>
+                <SelectItem value="CLOSED">Closed</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div>
-            <Label htmlFor="edit_price">Price *</Label>
-            <Input
-              id="edit_price"
-              name="price"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="Enter price"
-              value={formData.price}
-              onChange={(e) => handleChange("price", e.target.value)}
-              className={errors.price ? "border-red-500" : ""}
-            />
-            {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
-          </div>
-
-          <div className="flex gap-2 pt-4">
-            <Button type="submit" className="flex-1 bg-orange-500 hover:bg-orange-600">
+          <div className="flex gap-4 pt-6">
+            <Button
+              type="submit"
+              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white h-12 rounded-lg font-medium"
+            >
               Save
             </Button>
-            <Button type="button" variant="outline" onClick={onClose} className="flex-1 bg-transparent">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="flex-1 bg-white border-2 border-gray-200 text-gray-700 hover:bg-gray-50 h-12 rounded-lg font-medium"
+            >
               Cancel
             </Button>
           </div>

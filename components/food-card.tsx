@@ -5,6 +5,7 @@ import { Star, MoreVertical, Edit, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { EditFoodModal } from "@/components/edit-food-modal"
+import { DeleteFoodModal } from "@/components/delete-food-modal"
 import type { Food } from "@/app/page"
 
 interface FoodCardProps {
@@ -15,15 +16,18 @@ interface FoodCardProps {
 
 export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
   const handleEdit = () => {
     setIsEditModalOpen(true)
   }
 
   const handleDelete = () => {
-    if (confirm("Are you sure you want to delete this food item?")) {
-      onDelete(food.id)
-    }
+    setIsDeleteModalOpen(true)
+  }
+
+  const handleConfirmDelete = () => {
+    onDelete(food.id)
   }
 
   const handleUpdate = (updatedData: Partial<Food>) => {
@@ -36,12 +40,12 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
       <article className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
         <div className="relative">
           <img
-            src={food.food_image || `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(food.food_name)}`}
-            alt={food.food_name}
+            src={food.image || `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(food.name)}`}
+            alt={food.name}
             className="w-full h-48 object-cover"
           />
           <div className="absolute top-3 left-3 bg-orange-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-            ${food.price.toFixed(2)}
+            {/* If you want to show price, you need to add it to the new interface or remove this */}
           </div>
           <div className="absolute top-3 right-3">
             <DropdownMenu>
@@ -68,29 +72,29 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
           <div className="flex items-center gap-3 mb-3">
             <img
               src={
-                food.restaurant_logo ||
-                `/placeholder.svg?height=40&width=40&query=${encodeURIComponent(food.restaurant_name + " logo")}`
+                food.restaurant.logo ||
+                `/placeholder.svg?height=40&width=40&query=${encodeURIComponent(food.restaurant.name + " logo") || "/placeholder.svg"}`
               }
-              alt={`${food.restaurant_name} logo`}
+              alt={`${food.restaurant.name} logo`}
               className="w-10 h-10 rounded-lg object-cover"
             />
             <div className="flex-1">
-              <h3 className="restaurant-name font-semibold text-gray-900 text-lg">{food.food_name}</h3>
+              <h3 className="restaurant-name font-semibold text-gray-900 text-lg">{food.name}</h3>
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span className="restaurant-rating text-sm text-gray-600">{food.food_rating.toFixed(1)}</span>
+                <span className="restaurant-rating text-sm text-gray-600">{food.rating.toFixed(1)}</span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="restaurant-name text-sm text-gray-600">{food.restaurant_name}</span>
+            <span className="restaurant-name text-sm text-gray-600">{food.restaurant.name}</span>
             <span
               className={`restaurant-status px-3 py-1 rounded-full text-xs font-medium ${
-                food.restaurant_status === "Open Now" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                food.restaurant.status === "OPEN_NOW" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
               }`}
             >
-              {food.restaurant_status === "Open Now" ? "Open" : "Closed"}
+              {food.restaurant.status === "OPEN_NOW" ? "Open" : "Closed"}
             </span>
           </div>
         </div>
@@ -101,6 +105,13 @@ export function FoodCard({ food, onUpdate, onDelete }: FoodCardProps) {
         onClose={() => setIsEditModalOpen(false)}
         onSubmit={handleUpdate}
         food={food}
+      />
+
+      <DeleteFoodModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        foodName={food.name}
       />
     </>
   )
